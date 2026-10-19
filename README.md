@@ -111,10 +111,6 @@ Returns `204 No Content` on success, `404` if alias not found.
 
 Run the project command wrapper from the repository root. Windows users can choose PowerShell or Command Prompt; macOS/Linux users can use the POSIX shell script:
 
-```powershell
-.\snip.ps1 up
-```
-
 ```bat
 url-shortener-docker.bat up
 ```
