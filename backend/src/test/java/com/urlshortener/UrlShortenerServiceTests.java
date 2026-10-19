@@ -55,12 +55,50 @@ public class UrlShortenerServiceTests {
     @Test
     void getFullUrl_ReturnsExistingUrl() throws ExecutionException, InterruptedException {
         var request = new ShortenUrlRequest();
-        request.setFullUrl("https://example.com");
+        request.setFullUrl("https://example.com/");
         request.setCustomAlias("example");
         service.shorten(request, BASE_URL);
 
         String fullUrl = CompletableFuture.supplyAsync(() -> service.getFullUrl("example")).get();
 
-        assertEquals("https://example.com", fullUrl);
+        assertEquals("https://example.com/", fullUrl);
+    }
+
+    @Test
+    void delete_WithExistingAlias_RemovesUrlAndReturnsTrue() {
+        var request = new ShortenUrlRequest();
+        request.setFullUrl("https://example.com/to-delete");
+        request.setCustomAlias("to-delete");
+        service.shorten(request, BASE_URL);
+
+        boolean deleted = service.delete("to-delete");
+
+        assertTrue(deleted, "delete should return true for an existing alias");
+        assertNull(service.getFullUrl("to-delete"),
+                "alias should no longer resolve after deletion");
+    }
+
+    @Test
+    void delete_WithUnknownAlias_ReturnsFalse() {
+        boolean deleted = service.delete("does-not-exist");
+        assertFalse(deleted, "delete should return false when the alias does not exist");
+    }
+
+    @Test
+    void delete_ThenReuseAlias_Succeeds() {
+        var first = new ShortenUrlRequest();
+        first.setFullUrl("https://example.com/first");
+        first.setCustomAlias("reusable");
+        service.shorten(first, BASE_URL);
+
+        assertTrue(service.delete("reusable"));
+
+        var second = new ShortenUrlRequest();
+        second.setFullUrl("https://example.com/second");
+        second.setCustomAlias("reusable");
+
+        ShortenUrlResponse response = service.shorten(second, BASE_URL);
+        assertEquals("reusable", response.getAlias());
+        assertEquals("https://example.com/second", service.getFullUrl("reusable"));
     }
 }

@@ -35,16 +35,20 @@ describe('api service', () => {
       .rejects.toThrow('Alias already taken.');
   });
 
-  it('listAll sends GET to /urls', async () => {
+  it('listAll requests the selected page and returns the paged response', async () => {
+    const items = [
+      { alias: 'abc', fullUrl: 'https://example.com', shortUrl: 'http://host/abc' },
+    ];
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => [],
+      json: async () => ({ items, page: 1, size: 5, total: 6 }),
     } as Response);
 
-    await api.listAll();
+    const result = await api.listAll(1, 5);
 
-    expect(fetch).toHaveBeenCalledWith('/urls');
+    expect(fetch).toHaveBeenCalledWith('/urls?page=1&size=5');
+    expect(result).toEqual({ items, page: 1, size: 5, total: 6 });
   });
 
   it('delete sends DELETE to /{alias}', async () => {

@@ -11,6 +11,8 @@ RUN mvn -B package -DskipTests
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 RUN mkdir -p /data && chown appuser:appgroup /data
 VOLUME ["/data"]

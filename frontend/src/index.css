@@ -331,6 +331,32 @@ input:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 .actions-cell { text-align: right; width: 80px; }
 
+.url-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.url-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+.url-pagination button {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  background: var(--surface-card);
+  font: inherit;
+  cursor: pointer;
+}
+.url-pagination button:disabled { opacity: 0.45; cursor: not-allowed; }
+
 /* ── Empty state ─────────────────────────────────── */
 .empty-state {
   padding: 32px 0 8px;
@@ -363,4 +389,5 @@ input:disabled { opacity: 0.6; cursor: not-allowed; }
   .card { padding: 20px 16px; }
   .result-banner__inner { flex-direction: column; align-items: flex-start; }
   .full-url { max-width: 200px; }
+  .url-pagination { align-items: flex-start; flex-direction: column; }
 }

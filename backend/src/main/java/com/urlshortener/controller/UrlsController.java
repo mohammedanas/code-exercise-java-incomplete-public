@@ -1,5 +1,6 @@
 package com.urlshortener.controller;
 
+import com.urlshortener.model.PagedResult;
 import com.urlshortener.model.ShortenUrlRequest;
 import com.urlshortener.model.ShortenUrlResponse;
 import com.urlshortener.model.UrlListItem;
@@ -8,12 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
@@ -29,16 +25,24 @@ public class UrlsController {
     }
 
     @PostMapping("/shorten")
-    public ResponseEntity<Void> shorten(
+    public ResponseEntity<ShortenUrlResponse> shorten(
             @Valid @RequestBody ShortenUrlRequest request,
             HttpServletRequest requestContext) {
-        return ResponseEntity.ok().build();
+        var baseUrl = getBaseUrl(requestContext);
+        var response = service.shorten(request, baseUrl);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/urls")
-    public List<UrlListItem> getAll(HttpServletRequest requestContext) {
+    public PagedResult<UrlListItem> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            HttpServletRequest requestContext) {
+        if (page < 0 || size < 1) {
+            throw new IllegalArgumentException("page must be >= 0 and size must be >= 1");
+        }
         var baseUrl = getBaseUrl(requestContext);
-        return service.getAll(baseUrl);
+        return service.getAll(baseUrl, page, Math.min(size, 100));
     }
 
     @GetMapping("/{alias}")
@@ -47,7 +51,7 @@ public class UrlsController {
         if (fullUrl == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(fullUrl)).build();
+        return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT).location(URI.create(fullUrl)).build();
     }
 
     @DeleteMapping("/{alias}")

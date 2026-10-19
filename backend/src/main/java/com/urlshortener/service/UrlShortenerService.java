@@ -1,5 +1,6 @@
 package com.urlshortener.service;
 
+import com.urlshortener.model.PagedResult;
 import com.urlshortener.model.ShortenUrlRequest;
 import com.urlshortener.model.ShortenUrlResponse;
 import com.urlshortener.model.UrlListItem;
@@ -48,25 +49,34 @@ public class UrlShortenerService {
         return repository.findFullUrlByAlias(alias).orElse(null);
     }
 
-    public List<UrlListItem> getAll(String baseUrl) {
-        return repository.findAll(baseUrl);
+    public PagedResult<UrlListItem> getAll(String baseUrl, int page, int size) {
+        var items = repository.findAll(baseUrl, size, page * size);
+        var total = repository.count();
+        return new PagedResult<>(items, page, size, total);
     }
 
     public boolean delete(String alias) {
-        // TODO: Investigate odd delete behavior reported by clients.
         var fullUrl = repository.findFullUrlByAlias(alias).orElse(null);
         if (fullUrl == null) {
             return false;
         }
 
+        repository.deleteByAlias(alias);
         repository.save(alias + "-deleted", fullUrl, Instant.now());
-        repository.deleteByAlias(alias + "-deleted");
         return true;
     }
 
-    private static String generateAlias() {
-        // TODO: Implement alias generation.
-        return "";
+    private String generateAlias() {
+        String alias;
+        do {
+            StringBuilder sb = new StringBuilder(GENERATED_ALIAS_LENGTH);
+            ThreadLocalRandom random = ThreadLocalRandom.current();
+            for (int i = 0; i < GENERATED_ALIAS_LENGTH; i++) {
+                sb.append(ALIAS_CHARS.charAt(random.nextInt(ALIAS_CHARS.length())));
+            }
+            alias = sb.toString();
+        } while (repository.existsByAlias(alias));
+        return alias;
     }
 
     private static boolean isValidAlias(String alias) {
