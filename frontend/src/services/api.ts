@@ -1,4 +1,4 @@
-import type { ShortenUrlRequest, ShortenUrlResponse, UrlListItem } from '../types/api';
+import type { PagedResult, ShortenUrlRequest, ShortenUrlResponse, UrlListItem } from '../types/api';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -13,8 +13,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
     }
     throw new Error(message);
   }
-  // 204 No Content has no body
-  if (res.status === 204) return undefined as T;
+  
   return res.json() as Promise<T>;
 }
 
@@ -27,8 +26,10 @@ export const api = {
     }).then((r) => handleResponse<ShortenUrlResponse>(r));
   },
 
-  listAll(): Promise<UrlListItem[]> {
-    return fetch(`${API_BASE}/urls`).then((r) => handleResponse<UrlListItem[]>(r));
+  listAll(page = 0, size = 5): Promise<PagedResult<UrlListItem>> {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    return fetch(`${API_BASE}/urls?${params}`)
+      .then((r) => handleResponse<PagedResult<UrlListItem>>(r));
   },
 
   delete(alias: string): Promise<void> {

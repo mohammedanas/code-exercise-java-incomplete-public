@@ -106,3 +106,21 @@ Returns `204 No Content` on success, `404` if alias not found.
 **Testing** - The backend includes service-level tests and can be extended with integration tests. The frontend includes React component tests and service-level API tests.
 
 **Frontend** - The hosted frontend uses Nginx to proxy `/shorten`, `/urls`, and alias requests to the API, so the same Docker setup works without CORS issues.
+
+## Docker Commands
+
+Run the project command wrapper from the repository root. Windows users can choose PowerShell or Command Prompt; macOS/Linux users can use the POSIX shell script:
+
+```powershell
+.\snip.ps1 up
+```
+
+```bat
+url-shortener-docker.bat up
+```
+
+```sh
+sh ./url-shortener-docker.sh up
+```
+
+Replace `up` with `down`, `restart`, `rebuild`, `logs`, `logs-follow`, `status`, or `clean`. Run the wrapper without a command (or with `help`) to list all options. The `clean` command removes the Compose containers and locally built project images, but preserves the `urlshortener-data` volume. To open the app, visit `http://localhost:3000`.

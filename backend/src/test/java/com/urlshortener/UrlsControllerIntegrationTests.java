@@ -12,6 +12,7 @@ import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.PERMANENT_REDIRECT;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -39,10 +40,18 @@ class UrlsControllerIntegrationTests {
     }
 
     @Test
-    void getAlias_ExistingAlias_Returns301WithLocation() {
+    void getAlias_ExistingAlias_Returns308WithLocation() {
         var response = restTemplate.getForEntity("/redir", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(PERMANENT_REDIRECT);
         assertThat(response.getHeaders().getLocation()).hasToString("https://target.com/");
+    }
+
+    @Test
+    void getAlias_NonExistingAlias_Returns404() {
+        var response = restTemplate.getForEntity("/redir123", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
+        assertThat(response.getHeaders().getLocation()).isNull();
     }
 }
